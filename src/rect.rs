@@ -1,3 +1,5 @@
+use crate::point::Point;
+
 /// (lx,ly) should always be top left
 /// (rx, ry) should always be bottom right
 /// this is to match the data from API
@@ -6,14 +8,14 @@
 /// or calculate those values from given two points.
 #[derive(Debug)]
 pub struct Rect {
-    pub lx: i32,
-    pub ly: i32,
-    pub rx: i32,
-    pub ry: i32,
+    pub lx: u32,
+    pub ly: u32,
+    pub rx: u32,
+    pub ry: u32,
 }
 
 impl Rect {
-    pub fn new(lx: i32, ly: i32, rx: i32, ry: i32) -> Self {
+    pub fn new(lx: u32, ly: u32, rx: u32, ry: u32) -> Self {
         Self { lx, ly, rx, ry }
     }
 
@@ -30,22 +32,36 @@ impl Rect {
         }
     }
 
-    /// returns a new rect after translating the axes of the original rect.
-    pub fn translate_axes(&self, x: i32, y: i32) -> Self {
+    /// returns a new rect after offseting the axes of the original rect. coords
+    /// NOTE: axes should only be positive.
+    /// TODO: make sure offset is only positive.
+    pub fn offset_axes(&self, new_origin: Point) -> Self {
         Self {
-            lx: self.lx - x,
-            ly: self.ly - y,
-            rx: self.rx - x,
-            ry: self.ry - y,
+            lx: self.lx - new_origin.x as u32,
+            ly: self.ly - new_origin.y as u32,
+            rx: self.rx - new_origin.x as u32,
+            ry: self.ry - new_origin.y as u32,
         }
     }
 
-    pub fn height(&self) -> i32 {
+    pub fn height(&self) -> u32 {
         self.ry - self.ly
     }
 
-    pub fn width(&self) -> i32 {
+    pub fn width(&self) -> u32 {
         self.rx - self.lx
     }
 }
 
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test2() {
+        let x = Rect::new(4096, 4096, 8192, 8192);
+        let y = Rect::new(8000, 8000, 1000, 1000);
+
+        println!("{:#?}", x.common(&y));
+    }
+}

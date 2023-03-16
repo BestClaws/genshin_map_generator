@@ -1,0 +1,56 @@
+map id = map
+area id = nation
+
+
+
+get list of all maps (so far 3 maps: Surface, enkanomia, chasm underground)
+https://sg-public-api.hoyolab.com/common/map_user/ys_obc/v1/map/list?app_sn=ys_obc&lang=en-us
+
+fetch Map for the given id (get ID from above url)
+https://sg-public-api-static.hoyolab.com/common/map_user/ys_obc/v1/map/info?map_id=7&app_sn=ys_obc&lang=en-us
+
+
+nation and standalone-map names and bounding boxes
+https://sg-public-api-static.hoyolab.com/common/map_user/ys_obc/v1/map/get_area_pageLabel?map_id=2&app_sn=ys_obc&lang=en-us
+
+ALL Regions (analogy: State)  and Sub regions (analogy: city) Names and bounding boxes 
+https://sg-public-api-static.hoyolab.com/common/map_user/ys_obc/v1/map/map_anchor/list?map_id=2&app_sn=ys_obc&lang=en-us
+
+
+
+
+
+UI RELATED (might be useful when searching for chara mats.): Items Overview
+https://sg-public-api-static.hoyolab.com/common/map_user/ys_obc/v1/map/label/tree?map_id=2&app_sn=ys_obc&lang=en-us
+
+Items Full
+https://sg-public-api-static.hoyolab.com/common/map_user/ys_obc/v1/map/point/list?map_id=2&app_sn=ys_obc&lang=en-us
+
+
+
+underground maps image chunks (not to be confused with underground regions like enkanomia , chasm)
+(SOMETIMES RELEVANT)
+https://sg-public-api-static.hoyolab.com/common/map_user/ys_obc/v1/map/point_group?map_id=2&app_sn=ys_obc&lang=en-us
+
+region icons and origin:
+https://sg-public-api-static.hoyolab.com/common/map_user/ys_obc/v1/map/get_map_pageLabel?map_id=2&app_sn=ys_obc&lang=en-us
+
+user placed marks (NOT RELEVANT; USER SPECIFIC DATA)
+https://sg-public-api.hoyolab.com/common/map_user/ys_obc/v1/map/spot_kind/get_spot_kinds?map_id=2&ts=1678589429406&app_sn=ys_obc&lang=en-us&game_uid=812786494&game_region=os_asia
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chara+Weapon Images, IDs (useless)
+https://sg-public-api-static.hoyolab.com/common/map_user/ys_obc/v1/map/game_item?map_id=2&app_sn=ys_obc&lang=en-us
