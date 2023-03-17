@@ -11,12 +11,12 @@ use crate::{
 /// overlay the given image (map) with a list of images at given coords.
 /// Teyvat Interactive Map API calls these markers "Points"
 pub fn overlay_markers_hd(
-    map: DynamicImage,
+    mut map: DynamicImage,
     marker_entries: Vec<(DynamicImage, Point)>,
 ) -> DynamicImage {
     // resize the map
     let (map_w, map_h) = map.dimensions();
-    let mut map = map.resize(map_w * 2, map_h * 2, image::imageops::FilterType::Nearest);
+
 
     // overlay all points.
     for marker_entry in marker_entries {
@@ -101,21 +101,21 @@ impl MapGenerator {
                         if marker.label_id == label.id {
                             let image = self.client.fetch_image(&label.icon).await.unwrap();
 
-                            let point = marker.pos();
-                            println!("marker pos: {:?}", point);
-                            let orig = map_data.origin();
-                            println!("orig: {:?}", orig);
-                            let point = point.abs_point(orig);
-                            println!(" new point: {:?}", point);
-                            let frame_top_left = frame.top_left();
-                            println!("frame top left: {:?}", frame_top_left);
-                            let point = point.translate_axes(frame.top_left());
-                            println!("finally point: {:?}", point);
+                            // let point = marker.pos();
+                            // println!("marker pos: {:?}", point);
+                            // let orig = map_data.origin();
+                            // println!("orig: {:?}", orig);
+                            // let point = point.abs_point(orig);
+                            // println!(" new point: {:?}", point);
+                            // let frame_top_left = frame.top_left();
+                            // println!("frame top left: {:?}", frame_top_left);
+                            // let point = point.translate_axes(frame.top_left());
+                            // println!("finally point: {:?}", point);
 
                             matched_markers.push((
                                 image,
-                                // marker.pos().abs_point(map_data.origin()).translate_axes(frame.top_left()).translate_axes(map_data.padding())
-                                point,
+                                marker.pos().abs_point(map_data.origin()).translate_axes(frame.top_left())
+                                // point,
                             ))
                         }
                     }

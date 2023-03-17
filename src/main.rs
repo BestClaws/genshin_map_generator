@@ -32,7 +32,7 @@ fn main() {
     
     rt.block_on(async {
         let map_generator = MapGenerator::new();
-        let image = map_generator.gen_region_map("Enkanomiya", vec![String::from("Teleport Waypoint")]).await.unwrap();
+        let image = map_generator.gen_region_map("Sea of Clouds", vec![String::from("Teleport Waypoint"), String::from("Magical Crystal Chunk")]).await.unwrap();
         image.save("done.jpg").unwrap();
     });
 }
