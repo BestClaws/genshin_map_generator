@@ -11,8 +11,8 @@ use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 
 use serde::{Deserialize, Serialize};
 
-use crate::point::Point;
-use crate::rect::Rect;
+use crate::shapes::point::Point;
+use crate::shapes::rect::Rect;
 
 use super::models::MapData;
 use super::models::AreaData;
@@ -38,8 +38,19 @@ impl ApiClient {
         Self { client }
     }
 
+    pub async fn fetch_map_ids(&self) -> anyhow::Result<Vec<u8>>{
+        let url = "https://sg-public-api.hoyolab.com/common/map_user/ys_obc/v1/map/list?app_sn=ys_obc&lang=en-us";
+        let response: serde_json::Value = self.client.get(url).send().await?.json().await?;
+        // TODO: this breaks if api changes (shouldn't happen since versioning is used.)
+        let data = &response["data"]["list"].as_array().unwrap();
+        let data: Vec<u8> = data.iter().map(|val| val["id"].as_u64().unwrap() as u8).collect();
+
+    
+        Ok(data)
+    }
+
     /// fetches the MapData for given map_id
-    async fn fetch_map_data(&self, map_id: i32) -> anyhow::Result<MapData> {
+    pub async fn fetch_map_data(&self, map_id: u8) -> anyhow::Result<MapData> {
         let url = format!("https://sg-public-api-static.hoyolab.com/common/map_user/ys_obc/v1/map/info?map_id={map_id}&app_sn=ys_obc&lang=en-us");
         let response: serde_json::Value = self.client.get(url).send().await?.json().await?;
         // TODO: this breaks if api changes (shouldn't happen since versioning is used.)
@@ -51,57 +62,78 @@ impl ApiClient {
     }
 
     /// fetches the image (map) for the given URL
-    async fn fetch_image(&self, url: &str) -> anyhow::Result<DynamicImage> {
+    pub async fn fetch_image(&self, url: &str) -> anyhow::Result<DynamicImage> {
         let bytes = self.client.get(url).send().await?.bytes().await?;
-
+     
         let reader = image::io::Reader::new(std::io::Cursor::new(bytes))
             .with_guessed_format()
             .expect("cursor io never fails");
 
-        Ok(reader.decode()?)
+        let image = reader.decode()?;// RIDICULOUSLY SLOW. WHAT IS IT EVEN DOING
+        Ok(image) 
     }
 
     // TODO: this better be result as network is involved.
-    pub async fn get_map_chunk(&self, map_id: i32, frame: Rect) -> Option<RgbaImage> {
+    pub async fn get_map_chunk(&self, map_data: &MapData, frame: &Rect) -> Option<DynamicImage> {
         // TODO: this is unncessary allocation if frame doesn't fit anywhere in map
+        
         let mut output: RgbaImage =
             ImageBuffer::new((frame.rx - frame.lx) as u32, (frame.ry - frame.ly) as u32);
 
-        let Ok(map_data) = self.fetch_map_data(map_id).await else {
-            println!("error: could not fetch map data");
-            return None;
-        };
+        let mut map_chunk_dimensions: Option<(u32, u32)> = None;
 
         // FROM HERE ONWARDS _r means the rect variant
         for (y, row) in (0..).zip(map_data.slices.iter()) {
             for (x, map_chunk) in (0..).zip(row.iter()) {
                 let url = map_chunk.get("url").unwrap();
 
-                let Ok(map_chunk) =
-                    self.fetch_image(url).await else {
-                        println!("error: could not fetch image");
-                        return None;
-                    };
-                let (width, height) = map_chunk.dimensions();
+                // use already present dimensoins or fetch image and calculate dimension.
+                // double fetch for y=0, x =0 iteration here.
+                // atleast better than old version which hit fetch_image on every iteration.
+                let (width, height)  = match map_chunk_dimensions  {
+                    Some((width, height))=> {
+                        (width, height)
+                    }
+                    None => {
+                        let Ok(map_chunk) =
+                            self.fetch_image(url).await else {
+                                println!("error: could not fetch image");
+                                return None;
+                            };
+                        map_chunk_dimensions = Some(map_chunk.dimensions());
+                        map_chunk.dimensions()
+                        
+                    }
+
+                };
 
                 let map_chunk_r =
                     Rect::new(x * width, y * height, (x + 1) * width, (y + 1) * height);
                 
-                // the common rect between map chunk and given frame
-                let extracted_chunk_r = map_chunk_r.common(&frame);
-                println!("common: {:?}", extracted_chunk_r);
 
-                let Some(extracted_chunk_r) = extracted_chunk_r else {
+                println!("map chunk: {:?}", map_chunk_r);
+                println!("frame: {:?}", frame);
+
+                // the common rect between map chunk and given frame
+                let Some(extracted_chunk_r) = map_chunk_r.common(&frame) else {
                     continue;
                 };
 
+                let Ok(map_chunk) =
+                self.fetch_image(url).await else {
+                    println!("error: could not fetch image");
+                    return None;
+                };
+                
+                println!("common: {:?}", extracted_chunk_r);
+
                 // offset from map chunk
                 let extracted_chunk_mc_r = extracted_chunk_r
-                    .offset_axes(Point::new(map_chunk_r.lx as f32, map_chunk_r.ly as f32));
+                    .translate_axes(Point::new(map_chunk_r.lx as f32, map_chunk_r.ly as f32));
 
                 // offset from frame.
                 let output_chunk_f_r =
-                    extracted_chunk_r.offset_axes(Point::new(frame.lx as f32, frame.ly as f32));
+                    extracted_chunk_r.translate_axes(Point::new(frame.lx as f32, frame.ly as f32));
 
                 // TODO: .to_image() seems expensive.
                 let extracted_chunk = map_chunk
@@ -122,10 +154,12 @@ impl ApiClient {
             }
         }
 
+   
+
         // TODO: IF NO matches found. then white image
         // if if frame is partially outside of map. then partial image
         // will be rendered.
-        Some(output)
+        Some(DynamicImage::ImageRgba8(output))
     }
 
     pub async fn fetch_areas(&self) -> anyhow::Result<Vec<AreaData>> {
@@ -162,6 +196,27 @@ mod test {
     use super::ApiClient;
     use super::*;
 
+    
+    #[test]
+    fn test_fetch_map_ids() {
+        let client = ApiClient::new();
+        let rt = tokio::runtime::Runtime::new();
+
+        rt.unwrap().block_on(async {
+            match client.fetch_map_ids().await {
+                Ok(map_ids) => {
+                    println!("map ids: {:#?}", map_ids);
+                }
+                Err(e) => {
+                    println!("error occured: {:?}", e);
+                }
+            }
+        });
+    }
+
+
+
+
     #[test]
     fn test_get_map_chunk() {
         let client = ApiClient::new();
@@ -169,12 +224,14 @@ mod test {
         let rt = tokio::runtime::Runtime::new();
 
         rt.unwrap().block_on(async {
-            let map_data = client
-                .get_map_chunk(2, Rect::new(8000, 8000, 8100, 8100))
+            let map_data = client.fetch_map_data(2).await.unwrap();
+            let map_chunk = client
+                .get_map_chunk(&map_data, &Rect::new(8000, 8000, 8100, 8100))
                 .await;
 
-            match map_data {
-                Some(_) => {
+            match map_chunk {
+                Some(i) => {
+                    i.save("test2.png").unwrap();
                     println!("image was generated succesfully");
                 }
                 None => {

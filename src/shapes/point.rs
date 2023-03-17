@@ -1,3 +1,5 @@
+
+#[derive(Debug)]
 pub struct Point {
     pub x: f32, 
     pub y: f32,
@@ -16,6 +18,14 @@ impl Point {
         Self {
             x: self.x + old_origin.x,
             y: self.y + old_origin.y,
+        }
+    }
+
+    pub fn translate_axes(&self, new_origin: Point) -> Self {
+        Self {
+            x: self.x - new_origin.x,
+            y: self.y - new_origin.y,
+      
         }
     }
 

@@ -1,12 +1,12 @@
 mod api;
-mod point;
-mod rect;
-
+mod shapes;
+mod map_gen;
 
 use api::client::ApiClient;
 use image::{DynamicImage, GenericImageView};
-use point::Point;
-use rect::Rect;
+use map_gen::MapGenerator;
+use shapes::point::Point;
+use shapes::rect::Rect;
 
 /// overlay the given image (map) with a list of images at given coords.
 /// Teyvat Interactive Map API calls these markers "Points"
@@ -28,6 +28,11 @@ pub fn overlay_markers_hd(
 }
 
 fn main() {
-    let client = ApiClient::new();
-    client.get_map_chunk(2, Rect::new(2000, 2000, 2100, 2100));
+    let rt = tokio::runtime::Runtime::new().unwrap();
+    
+    rt.block_on(async {
+        let map_generator = MapGenerator::new();
+        let image = map_generator.gen_region_map("Enkanomiya", vec![String::from("Teleport Waypoint")]).await.unwrap();
+        image.save("done.jpg").unwrap();
+    });
 }

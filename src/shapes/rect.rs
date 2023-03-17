@@ -1,4 +1,4 @@
-use crate::point::Point;
+use crate::shapes::point::Point;
 
 /// (lx,ly) should always be top left
 /// (rx, ry) should always be bottom right
@@ -15,9 +15,14 @@ pub struct Rect {
 }
 
 impl Rect {
+
+
+
     pub fn new(lx: u32, ly: u32, rx: u32, ry: u32) -> Self {
         Self { lx, ly, rx, ry }
     }
+
+
 
     pub fn common(&self, other: &Rect) -> Option<Self> {
         if other.lx < self.rx && other.ly < self.ry && other.rx > self.lx && other.ry > self.ly {
@@ -32,10 +37,10 @@ impl Rect {
         }
     }
 
-    /// returns a new rect after offseting the axes of the original rect. coords
-    /// NOTE: axes should only be positive.
-    /// TODO: make sure offset is only positive.
-    pub fn offset_axes(&self, new_origin: Point) -> Self {
+    /// returns a new rect after translate the axes of the original rect. coords
+    /// NOTE: axes should only be positive ???.
+    /// TODO: make sure offset is only positive.bruh? what??
+    pub fn translate_axes(&self, new_origin: Point) -> Self {
         Self {
             lx: self.lx - new_origin.x as u32,
             ly: self.ly - new_origin.y as u32,
@@ -50,6 +55,11 @@ impl Rect {
 
     pub fn width(&self) -> u32 {
         self.rx - self.lx
+    }
+
+
+    pub fn top_left(&self) -> Point {
+        Point::new(self.lx as f32, self.ly as f32)
     }
 }
 
