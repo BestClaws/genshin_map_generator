@@ -69,7 +69,7 @@ impl ApiClient {
             .with_guessed_format()
             .expect("cursor io never fails");
 
-        let image = reader.decode()?;// RIDICULOUSLY SLOW. WHAT IS IT EVEN DOING
+        let image = reader.decode()?;// TODO: RIDICULOUSLY SLOW. WHY SO SLOW DECODING
         Ok(image) 
     }
 

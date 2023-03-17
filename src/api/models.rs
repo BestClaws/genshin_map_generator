@@ -30,7 +30,7 @@ impl MapData {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AreaData {
-    name: String,
+    pub name: String,
     #[serde(rename = "pc_icon_url")]
     pub icon_url: String,
     #[serde(rename = "l_x")]
@@ -61,19 +61,25 @@ impl AreaData {
             ry: (self.ry + old_origin.y) as u32,
         }
     }
+
+
+    pub fn as_region(&self) -> RegionData {
+        // TODO: WARNING supplying a dummy area_id. (do not use area_id on regiondata produced by this function.)
+        RegionData { name: self.name.clone(), lx: self.lx, ly: self.ly, rx: self.rx, ry: self.ry, area_id: 0, children: vec![] }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RegionData {
     pub name: String,
     #[serde(rename = "l_x")]
-    lx: f32,
+    pub lx: f32,
     #[serde(rename = "l_y")]
-    ly: f32,
+    pub ly: f32,
     #[serde(rename = "r_x")]
-    rx: f32,
+    pub rx: f32,
     #[serde(rename = "r_y")]
-    ry: f32,
+    pub ry: f32,
     pub area_id: u8,
     pub children: Vec<RegionData>,
 }

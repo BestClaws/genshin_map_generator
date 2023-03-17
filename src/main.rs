@@ -32,7 +32,7 @@ fn main() {
     
     rt.block_on(async {
         let map_generator = MapGenerator::new();
-        let image = map_generator.gen_region_map("Sea of Clouds", vec![String::from("Teleport Waypoint"), String::from("Magical Crystal Chunk")]).await.unwrap();
+        let image = map_generator.gen_area_map("Sumeru", vec![String::from("Teleport Waypoint"), String::from("Magical Crystal Chunk")]).await.unwrap();
         match image {
             Some(image) => { image.save("done.jpg").unwrap(); }
             None => {
@@ -40,4 +40,7 @@ fn main() {
             }
         }
     });
+
 }
+
+
