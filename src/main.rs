@@ -2,11 +2,11 @@ mod api;
 mod shapes;
 mod map_gen;
 
-use api::client::ApiClient;
+
 use image::{DynamicImage, GenericImageView};
 use map_gen::MapGenerator;
 use shapes::point::Point;
-use shapes::rect::Rect;
+
 
 /// overlay the given image (map) with a list of images at given coords.
 /// Teyvat Interactive Map API calls these markers "Points"
@@ -33,6 +33,11 @@ fn main() {
     rt.block_on(async {
         let map_generator = MapGenerator::new();
         let image = map_generator.gen_region_map("Sea of Clouds", vec![String::from("Teleport Waypoint"), String::from("Magical Crystal Chunk")]).await.unwrap();
-        image.save("done.jpg").unwrap();
+        match image {
+            Some(image) => { image.save("done.jpg").unwrap(); }
+            None => {
+                println!("no matches");
+            }
+        }
     });
 }
