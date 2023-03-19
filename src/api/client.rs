@@ -116,6 +116,7 @@ impl ApiClient {
 
                 // the common rect between map chunk and given frame
                 let Some(extracted_chunk_r) = map_chunk_r.common(&frame) else {
+                    println!("nothing common");
                     continue;
                 };
 
@@ -186,7 +187,7 @@ impl ApiClient {
         let url = format!("https://sg-public-api-static.hoyolab.com/common/map_user/ys_obc/v1/map/point/list?map_id={map_id}&app_sn=ys_obc&lang=en-us");
 
         let mut response:  serde_json::Value = self.client.get(url).send().await?.json().await?;
-        let  marker_data: MarkerData = serde_json::from_value(response["data"].take())?;
+        let  mut marker_data: MarkerData = serde_json::from_value(response["data"].take())?;
         Ok(marker_data)
     }
 }

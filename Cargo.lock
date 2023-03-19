@@ -642,6 +642,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "genshin_map_generator"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "http-cache-reqwest",
+ "image",
+ "reqwest",
+ "reqwest-middleware",
+ "serde",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "getrandom"
 version = "0.2.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1610,20 +1624,6 @@ dependencies = [
  "sha-1",
  "sha2",
  "thiserror",
-]
-
-[[package]]
-name = "stickers"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "http-cache-reqwest",
- "image",
- "reqwest",
- "reqwest-middleware",
- "serde",
- "serde_json",
- "tokio",
 ]
 
 [[package]]

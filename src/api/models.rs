@@ -63,10 +63,10 @@ impl AreaData {
     }
 
 
-    pub fn as_region(&self) -> RegionData {
-        // TODO: WARNING supplying a dummy area_id. (do not use area_id on regiondata produced by this function.)
-        RegionData { name: self.name.clone(), lx: self.lx, ly: self.ly, rx: self.rx, ry: self.ry, area_id: 0, children: vec![] }
-    }
+    // pub fn as_region(&self) -> RegionData {
+    //     // TODO: WARNING supplying a dummy area_id. (do not use area_id on regiondata produced by this function.)
+    //     RegionData { name: self.name.clone(), lx: self.lx, ly: self.ly, rx: self.rx, ry: self.ry, area_id: 0, children: vec![] }
+    // }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -82,12 +82,18 @@ pub struct RegionData {
     pub ry: f32,
     pub area_id: u8,
     pub children: Vec<RegionData>,
+    map_id: String, // number represented as string. in API
 }
 
 // TODO: duplication? excuse me?
 impl RegionData {
+
+    pub fn map_id(&self) -> u8 {
+        self.map_id.parse().unwrap()
+    }
+
     /// returns the frame after translating origin to top left of the map.
-    pub fn get_abs_frame(&self, old_origin: Point) -> Rect {
+    pub fn get_abs_frame(&self, old_origin: &Point) -> Rect {
         // origin = (h,k)
         // new_origin = (-h,-k); basically shifting back the origin to 0, 0 (top left of the map)
         // (X,Y) = (x - (-h), y - (-k)); new coorinates with respect to new origin
@@ -110,6 +116,7 @@ pub struct MarkerData {
     pub markers: Vec<Marker>,
     #[serde(rename = "label_list")]
     pub labels: Vec<Label>,
+    
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

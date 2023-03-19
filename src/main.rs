@@ -1,11 +1,10 @@
-mod api;
-mod shapes;
-mod map_gen;
+
+
 
 
 use image::{DynamicImage, GenericImageView};
-use map_gen::MapGenerator;
-use shapes::point::Point;
+use genshin_map_generator::MapGenerator;
+use genshin_map_generator::shapes::point::Point;
 
 
 /// overlay the given image (map) with a list of images at given coords.
